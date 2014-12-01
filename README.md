@@ -7,13 +7,17 @@ This module integrates [SpectroCoin](https://spectrocoin.com/) Payments with [WH
 
 1. Upload module content to your WHMCS installation folder.
 2. Generate private and public keys
-2.1 Private key:
+    1. Private key:
+    ```shell
     # generate a 2048-bit RSA private key
     openssl genrsa -out "C:\private" 2048
-2.2 Public key:
+    ```
+    2. Public key:
+    ```shell
     # output public key portion in PEM format
     openssl rsa -in "C:\private" -pubout -outform PEM -out "C:\public"
-2.3 Save private key to to modules/gateways/spectrocoin/keys as "private"
+    ```
+    3. Save private key to to modules/gateways/spectrocoin/keys as "private"
 
 **CONFIGURATION**
 
