@@ -1,0 +1,12 @@
+Order deny,allow
+Deny from all
+
+<Files order.php>
+order allow,deny
+allow from all
+</Files>
+<Files ~ "^.*\.(LOG|log|back|bak|bk|lock|lck|LCK|txt|text|backup|pem|PEM|TXT)">
+    Order allow,deny
+    Deny from all
+    Satisfy All
+</Files>
