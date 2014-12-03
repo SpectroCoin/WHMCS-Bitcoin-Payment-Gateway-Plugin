@@ -17,7 +17,7 @@ This module integrates [SpectroCoin](https://spectrocoin.com/) Payments with [WH
     # output public key portion in PEM format
     openssl rsa -in "C:\private" -pubout -outform PEM -out "C:\public"
     ```
-    3. Save private key to to modules/gateways/spectrocoin/keys as "private"
+    3. Save private key to modules/gateways/spectrocoin/keys as "private"
 
 **CONFIGURATION**
 
