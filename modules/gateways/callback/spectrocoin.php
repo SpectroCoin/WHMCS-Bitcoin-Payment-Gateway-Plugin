@@ -35,11 +35,18 @@ $callback = $client->parseCreateOrderCallback($request);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($client->validateCreateOrderCallback($callback)) {
         if ($callback->getReceiveCurrency() != $receiveCurrency) {
-            error_log('Spectrocoin error. Currencies does not match in callback');
-            echo 'Spectrocoin error. Currencies does not match in callback';
+            error_log('SpectroCoin error. Currencies does not match in callback');
+            echo 'SpectroCoin error. Currencies does not match in callback';
             exit;
         }
-        $invoiceId = $callback->getOrderId();
+        if (!isset($_GET['invoice_id'])) {
+            error_log('SpectroCoin error. invoice_id is not provided');
+            echo 'SpectroCoin error. invoice_id is not provided';
+            exit;
+        }
+
+        $invoiceId = intval($_GET['invoice_id']);
+
         switch ($callback->getStatus()) {
             case OrderStatusEnum::$Test:
                 break;
@@ -70,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 } else {
     // Cancel callback
-    if (isset($_GET['cancel']) && isset($_GET['order_id'])) {
-        $invoiceId = intval($_GET['order_id']);
+    if (isset($_GET['cancel']) && isset($_GET['invoice_id'])) {
+        $invoiceId = intval($_GET['invoice_id']);
         mysql_query("update tblorders set status='Cancelled' where invoiceid = $invoiceId");
         header('Location: /');
     }

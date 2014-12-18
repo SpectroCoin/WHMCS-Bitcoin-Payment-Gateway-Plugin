@@ -70,12 +70,12 @@ if ($receiveAmount < 0) {
 }
 
 $orderDescription = "Order #{$invoiceId}";
-$callbackUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.php';
+$callbackUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId;
 $successUrl = $options['systemURL'] . '';
-$cancelUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.php?cancel&order_id=' . $invoiceId;
+$cancelUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoiceId;
 
 $client = new SCMerchantClient($privateKeyFilePath, '', $merchantId, $appId);
-$orderRequest = new CreateOrderRequest($invoiceId, 0, $receiveAmount, $orderDescription, "en", $callbackUrl, $successUrl, $cancelUrl);
+$orderRequest = new CreateOrderRequest(null, 0, $receiveAmount, $orderDescription, "en", $callbackUrl, $successUrl, $cancelUrl);
 $response = $client->createOrder($orderRequest);
 
 if ($response instanceof ApiError) {
