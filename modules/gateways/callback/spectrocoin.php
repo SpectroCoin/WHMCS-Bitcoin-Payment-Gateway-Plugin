@@ -45,7 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         }
 
+        if (!isset($_GET['invoice_id'])) {
+            die("Missing invoice_id parameter");
+        }
         $invoiceId = intval($_GET['invoice_id']);
+        $orderResult = mysql_query("SELECT orderdata FROM tblorders WHERE invoiceid = " . $invoiceId);
+        $order = mysql_fetch_assoc($orderResult);
+        $orderdata = unserialize($order['orderdata']);
+        if ($callback->getOrderId() != $orderdata['orderid']) {
+            die("Order id does not match. Have: {$orderdata['orderid']}. Got {$callback->getOrderId()}");
+        }
 
         switch ($callback->getStatus()) {
             case OrderStatusEnum::$Test:
