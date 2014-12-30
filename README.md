@@ -5,7 +5,7 @@ This module integrates [SpectroCoin](https://spectrocoin.com/) Payments with [WH
 
 **INSTALLATION**
 
-1. Upload module content to your WHMCS installation folder.
+1. Upload module content to your WHMCS folder.
 2. Generate private and public keys
     1. Private key:
     ```shell
@@ -22,5 +22,5 @@ This module integrates [SpectroCoin](https://spectrocoin.com/) Payments with [WH
 **CONFIGURATION**
 
 3. Go to Setup -> Payments -> Payment Gateways
-4. Select "SpectroCoin" and press Activate
-5. Enter your Merchant Id, Application Id, Private key.
+4. Select "Bitcoin provided by SpectroCoin" and press Activate
+5. Enter your Merchant Id, Application Id.
