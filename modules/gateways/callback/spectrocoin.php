@@ -19,7 +19,7 @@ $privateKey = __DIR__ . '/../spectrocoin/keys/private';
 
 if (!file_exists($privateKey) ||
     !is_file($privateKey)  ) {
-    error_log('Spectrocoin. No private key file found');
+    error_log('SpectroCoin. No private key file found');
     echo 'No private key file found';
     exit;
 }
@@ -49,12 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             die("Missing invoice_id parameter");
         }
         $invoiceId = intval($_GET['invoice_id']);
-        $orderResult = mysql_query("SELECT orderdata FROM tblorders WHERE invoiceid = " . $invoiceId);
-        $order = mysql_fetch_assoc($orderResult);
-        $orderdata = unserialize($order['orderdata']);
-        if ($callback->getOrderId() != $orderdata['orderid']) {
-            die("Order id does not match. Have: {$orderdata['orderid']}. Got {$callback->getOrderId()}");
-        }
 
         switch ($callback->getStatus()) {
             case OrderStatusEnum::$Test:
@@ -64,10 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             case OrderStatusEnum::$Pending:
                 break;
             case OrderStatusEnum::$Expired:
-                mysql_query("update tblorders set status='Cancelled' where invoiceid = $invoiceId");
                 break;
             case OrderStatusEnum::$Failed:
-                mysql_query("update tblorders set status='Cancelled' where invoiceid = $invoiceId");
                 break;
             case OrderStatusEnum::$Paid:
                 $invoiceId = checkCbInvoiceID($invoiceId, $GATEWAY["name"]);
@@ -78,17 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 addInvoicePayment($invoiceId, $transId, $amount, $fee, $gatewaymodule);
                 break;
             default:
-                error_log('Spectrocoin callback error. Unknown order status: ' . $callback->getStatus());
+                error_log('SpectroCoin callback error. Unknown order status: ' . $callback->getStatus());
                 echo 'Unknown order status: '.$callback->getStatus();
                 exit;
         }
         echo '*ok*';
     }
 } else {
-    // Cancel callback
-    if (isset($_GET['cancel']) && isset($_GET['invoice_id'])) {
-        $invoiceId = intval($_GET['invoice_id']);
-        mysql_query("update tblorders set status='Cancelled' where invoiceid = $invoiceId");
-        header('Location: /');
-    }
+    header('Location: /');
 }

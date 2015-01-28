@@ -88,7 +88,6 @@ if ($response instanceof ApiError) {
         exit;
     } else {
         $redirectUrl = $response->getRedirectUrl();
-        mysql_query("UPDATE tblorders SET orderdata = '". serialize(array('orderid' => $response->getOrderId())) ."' WHERE invoiceid = " . $invoiceId);
         header('Location: ' . $redirectUrl);
     }
 
