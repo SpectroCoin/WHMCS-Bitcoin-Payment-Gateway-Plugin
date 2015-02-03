@@ -6,6 +6,21 @@ include '../../../includes/gatewayfunctions.php';
 include '../../../includes/invoicefunctions.php';
 require_once '../spectrocoin/lib/SCMerchantClient/SCMerchantClient.php';
 
+function unitConversion($amount, $currencyFrom, $currencyTo)
+{
+    $currencyFrom = strtoupper($currencyFrom);
+    $currencyTo = strtoupper($currencyTo);
+    $url = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.xchange%20where%20pair%20in%20%28%22{$currencyTo}{$currencyFrom}%22%20%29&env=store://datatables.org/alltableswithkeys&format=json";
+    $content = file_get_contents($url);
+    if ($content) {
+        $obj = json_decode($content);
+        if (!isset($obj->error) && isset($obj->query->results->rate->Rate)) {
+            $rate = $obj->query->results->rate->Rate;
+            return ($amount * 1.0) / $rate;
+        }
+    }
+}
+
 $gatewaymodule = "spectrocoin";
 $GATEWAY = getGatewayVariables($gatewaymodule);
 
@@ -63,10 +78,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 break;
             case OrderStatusEnum::$Paid:
                 $invoiceId = checkCbInvoiceID($invoiceId, $GATEWAY["name"]);
-                $transId = "SC" . $invoiceId;
+				$transId = "SC".$callback->getOrderRequestId();
                 checkCbTransID($transId);
+				
+				$query = mysql_query("SELECT tblcurrencies.code FROM tblinvoices, tblclients, tblcurrencies where tblinvoices.userid = tblclients.id and tblclients.currency = tblcurrencies.id and tblinvoices.id=$invoiceId");
+				$data = mysql_fetch_assoc($query);
+				if (!$data) {
+					error_log('No invoice found for invoice id' . $invoiceId);
+					die("Invalid invoice");
+				}
+				$currency = $data['code'];
+				
+				$receivedAmount = $callback->getReceivedAmount();
+				if ($currency != $receiveCurrency) {
+					$amount = unitConversion($receivedAmount, $receiveCurrency, $currency);
+				} else {
+					$amount = $receivedAmount;
+				}
+                
                 $fee = 0;
-                $amount = '';
                 addInvoicePayment($invoiceId, $transId, $amount, $fee, $gatewaymodule);
                 break;
             default:
@@ -75,7 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 exit;
         }
         echo '*ok*';
-    }
+    } else {
+		error_log('SpectroCoin error. Invalid callback');
+		echo 'SpectroCoin error. Invalid callback';
+		exit;
+	}
 } else {
     header('Location: /');
 }
