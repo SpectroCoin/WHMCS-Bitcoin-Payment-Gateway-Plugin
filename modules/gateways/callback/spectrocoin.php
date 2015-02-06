@@ -27,16 +27,14 @@ $GATEWAY = getGatewayVariables($gatewaymodule);
 if (!$GATEWAY["type"]) {
     logTransaction($GATEWAY["name"], $_POST, 'Not activated');
     error_log('Spectrocoin module not activated');
-    die("Spectrocoin module not activated");
+    exit("Spectrocoin module not activated");
 }
 
 $privateKey = __DIR__ . '/../spectrocoin/keys/private';
 
-if (!file_exists($privateKey) ||
-    !is_file($privateKey)  ) {
+if (!file_exists($privateKey) || !is_file($privateKey)) {
     error_log('SpectroCoin. No private key file found');
-    echo 'No private key file found';
-    exit;
+    exit('No private key file found');
 }
 
 $merchantId = $GATEWAY['merchantId'];
@@ -51,35 +49,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($client->validateCreateOrderCallback($callback)) {
         if ($callback->getReceiveCurrency() != $receiveCurrency) {
             error_log('SpectroCoin error. Currencies does not match in callback');
-            echo 'SpectroCoin error. Currencies does not match in callback';
-            exit;
+            exit('SpectroCoin error. Currencies does not match in callback');
         }
         if (!isset($_GET['invoice_id'])) {
             error_log('SpectroCoin error. invoice_id is not provided');
-            echo 'SpectroCoin error. invoice_id is not provided';
-            exit;
-        }
-
-        if (!isset($_GET['invoice_id'])) {
-            die("Missing invoice_id parameter");
+            exit('SpectroCoin error. invoice_id is not provided');
         }
         $invoiceId = intval($_GET['invoice_id']);
+		$status = $callback->getStatus();
+		
+		$log = "Received SpectroCoin callback for invoice #$invoiceId. Status: $status";
 
-        switch ($callback->getStatus()) {
+        switch ($status) {
             case OrderStatusEnum::$Test:
-                break;
             case OrderStatusEnum::$New:
-                break;
             case OrderStatusEnum::$Pending:
-                break;
             case OrderStatusEnum::$Expired:
-                break;
             case OrderStatusEnum::$Failed:
                 break;
             case OrderStatusEnum::$Paid:
                 $invoiceId = checkCbInvoiceID($invoiceId, $GATEWAY["name"]);
 				$transId = "SC".$callback->getOrderRequestId();
                 checkCbTransID($transId);
+				
+				$log .= ", Transaction #$transId";
 				
 				$query = mysql_query("SELECT tblcurrencies.code FROM tblinvoices, tblclients, tblcurrencies where tblinvoices.userid = tblclients.id and tblclients.currency = tblcurrencies.id and tblinvoices.id=$invoiceId");
 				$data = mysql_fetch_assoc($query);
@@ -88,10 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 					die("Invalid invoice");
 				}
 				$currency = $data['code'];
-				
 				$receivedAmount = $callback->getReceivedAmount();
+				
+				$log .= ", Invoice currency: '$currency', Receive currency: '$receiveCurrency', Received amount: $receivedAmount";
+				
 				if ($currency != $receiveCurrency) {
 					$amount = unitConversion($receivedAmount, $receiveCurrency, $currency);
+					$log .= ", Converted amount: $amount";
 				} else {
 					$amount = $receivedAmount;
 				}
@@ -101,14 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 break;
             default:
                 error_log('SpectroCoin callback error. Unknown order status: ' . $callback->getStatus());
-                echo 'Unknown order status: '.$callback->getStatus();
-                exit;
+                exit('Unknown order status: '.$callback->getStatus());
         }
         echo '*ok*';
+		
+		logActivity($log);
     } else {
 		error_log('SpectroCoin error. Invalid callback');
-		echo 'SpectroCoin error. Invalid callback';
-		exit;
+		exit('SpectroCoin error. Invalid callback');
 	}
 } else {
     header('Location: /');
