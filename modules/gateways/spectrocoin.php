@@ -15,11 +15,6 @@ function spectrocoin_config()
             'FriendlyName' => 'Application id',
             'Type'         => 'text',
         ),
-        'receive_currency' => array(
-            'FriendlyName' => 'Receive currency',
-            'Type'         => 'dropdown',
-            'Options'      => 'EUR,BTC',
-        )
     );
     return $configarray;
 }
