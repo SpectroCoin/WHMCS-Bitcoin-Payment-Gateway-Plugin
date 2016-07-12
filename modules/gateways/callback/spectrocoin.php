@@ -1,6 +1,6 @@
 <?php
 # Required File Includes
-include '../../../dbconnect.php';
+include '../../../init.php';
 include '../../../includes/functions.php';
 include '../../../includes/gatewayfunctions.php';
 include '../../../includes/invoicefunctions.php';
@@ -27,15 +27,11 @@ $appId = $GATEWAY['appId'];
 $receiveCurrency = $GATEWAY['receive_currency'];
 
 $request = $_REQUEST;
-$client =  new SCMerchantClient($privateKey, '', $merchantId, $appId);
+$client = new SCMerchantClient($merchantApiUrl, $merchantId, $appId);
 $callback = $client->parseCreateOrderCallback($request);
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	if ($client->validateCreateOrderCallback($callback)) {
-		if ($callback->getReceiveCurrency() != $receiveCurrency) {
-			error_log('SpectroCoin error. Currencies does not match in callback');
-			exit('SpectroCoin error. Currencies does not match in callback');
-		}
+if ($_SERVER['REQUEST_METHOD'] == 'POST')
+{
+	if ($callback != null && $client->validateCreateOrderCallback($callback)){
 		if (!isset($_GET['invoice_id'])) {
 			error_log('SpectroCoin error. invoice_id is not provided');
 			exit('SpectroCoin error. invoice_id is not provided');
