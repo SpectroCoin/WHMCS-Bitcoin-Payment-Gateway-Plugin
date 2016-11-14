@@ -1,7 +1,7 @@
 SpectroCoin Bitcoin Payment Extension
 ---------------
 
-This merchant module integrates [SpectroCoin](https://spectrocoin.com/) Payments with [WHMCS](http://www.whmcs.com/) to accept [Bitcoin](https://bitcoin.org) payments.
+This is [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHMCS. This extenstion allows to easily accept bitcoins at your WHMCS website. You can find a [tutorial](https://www.youtube.com/watch?v=AwvrjjCfJgc) how to install this extenstion. You can also view video tutorial how to integrate bitcoin payments for WHMCS.
 
 **INSTALLATION**
 
@@ -11,6 +11,7 @@ This merchant module integrates [SpectroCoin](https://spectrocoin.com/) Payments
     ```shell
     # generate a 2048-bit RSA private key
     openssl genrsa -out "C:\private" 2048
+	
     ```
     2. Public key:
     ```shell
