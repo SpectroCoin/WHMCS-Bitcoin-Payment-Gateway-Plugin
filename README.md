@@ -1,12 +1,17 @@
-SpectroCoin Bitcoin Payment Extension
+SpectroCoin WHMCS Bitcoin Payment Extension
 ---------------
 
-This is [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHMCS. This extenstion allows to easily accept bitcoins at your WHMCS website. You can find a [tutorial](https://www.youtube.com/watch?v=AwvrjjCfJgc) how to install this extenstion. You can also view video tutorial how to integrate bitcoin payments for WHMCS.
+This is [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHMCS. This extenstion allows to easily accept bitcoins at your WHMCS powered website. You can find a  how to install this extenstion. You can view [a tutorial how to integrate bitcoin payments for WHMCS](https://www.youtube.com/watch?v=AwvrjjCfJgc).
 
 **INSTALLATION**
 
 1. Upload module content to your WHMCS folder.
-2. Generate private and public keys [Manually]
+2. Generate private and public keys [Automatically]
+	1. Private key/Public key:
+	Go to [SpectroCoin](https://spectrocoin.com/) -> [Project list](https://spectrocoin.com/en/merchant/api/list.html)
+	Click on your project  -> Edit Project -> Click on Public key (You will get Automatically generated private key, you can download it. After that and Public key will be generated Automatically.)
+	
+3. Generate private and public keys [Manually]
     1. Private key:
     ```shell
     # generate a 2048-bit RSA private key
@@ -18,12 +23,9 @@ This is [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHMCS
     # output public key portion in PEM format
     openssl rsa -in "C:\private" -pubout -outform PEM -out "C:\public"
     ```
-3. Generate private and public keys [Automatically]
-	1. Private key/Public key:
-	Go to [SpectroCoin](https://spectrocoin.com/) -> [Project list](https://spectrocoin.com/en/merchant/api/list.html)
-	Click on your project  -> Edit Project -> Click on Public key (You will get Automatically generated private key, you can download it. After that and Public key will be generated Automatically.)
+
     
-	4. Save private key to modules/gateways/spectrocoin/keys as "private"
+4. Save private key to modules/gateways/spectrocoin/keys as "private"
 
 **CONFIGURATION**
 
@@ -33,6 +35,8 @@ This is [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHMCS
 
 **INFORMATION** 
 
-1. You can contact us e-mail: info@spectrocoin.com 
-2. You can contact us by phone: +442037697306
-3. You can contact us on Skype: spectrocoin_merchant
+This plugin has been developed by SpectroCoin.com
+If you need further support regarding our services you can contact us via:
+E-mail: [info@spectrocoin.com](mailto:info@spectrocoin.com)
+Phone: +442037697306
+Skype: spectrocoin_merchant(skype:spectrocoin_merchant)
