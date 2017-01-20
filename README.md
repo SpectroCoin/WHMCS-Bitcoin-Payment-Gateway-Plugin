@@ -37,6 +37,6 @@ This is [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHMCS
 
 This plugin has been developed by SpectroCoin.com
 If you need further support regarding our services you can contact us via:
-E-mail: [info@spectrocoin.com](mailto:info@spectrocoin.com)
-Phone: +442037697306
-Skype: spectrocoin_merchant(skype:spectrocoin_merchant)
+E-mail: [info@spectrocoin.com](mailto:info@spectrocoin.com)<br />
+Phone: +442037697306<br />
+Skype: spectrocoin_merchant(skype:spectrocoin_merchant?message)<br />
