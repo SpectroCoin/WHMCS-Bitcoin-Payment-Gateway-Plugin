@@ -41,5 +41,5 @@ This plugin has been developed by SpectroCoin.com
 If you need further support regarding our services you can contact us via:<br />
 E-mail: [info@spectrocoin.com](mailto:info@spectrocoin.com)<br />
 Phone: +442037697306<br />
-Skype: spectrocoin_merchant<br />
-Web: https://spectrocoin.com(https://spectrocoin.com)
+Skype: [spectrocoin_merchant](skype:spectrocoin_merchant)<br />
+Web: [https://spectrocoin.com](https://spectrocoin.com)
