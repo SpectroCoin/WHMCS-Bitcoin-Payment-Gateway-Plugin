@@ -17,13 +17,14 @@ This is a [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHM
     # generate a 2048-bit RSA private key
     openssl genrsa -out "C:\private" 2048
 	
-    ```<br />
+    ```
+    <br />
     	Public key:
     ```shell
     # output public key portion in PEM format
     openssl rsa -in "C:\private" -pubout -outform PEM -out "C:\public"
     ```
-
+	<br />
     
 4. Save private key to modules/gateways/spectrocoin/keys as "private"
 
