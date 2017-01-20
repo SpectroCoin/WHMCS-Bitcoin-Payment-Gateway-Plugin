@@ -12,7 +12,8 @@ This is a [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHM
 	Click on your project  -> Edit Project -> Click on Public key (You will get Automatically generated private key, you can download it. After that and Public key will be generated Automatically.)
 	
 	2. Manually<br />
-    	Private key:
+    	
+	Private key:
     ```shell
     # generate a 2048-bit RSA private key
     openssl genrsa -out "C:\private" 2048
