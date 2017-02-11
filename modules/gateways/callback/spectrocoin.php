@@ -23,11 +23,11 @@ if (!file_exists($privateKey) || !is_file($privateKey)) {
 }
 
 $merchantId = $GATEWAY['merchantId'];
-$appId = $GATEWAY['appId'];
+$projectId = $GATEWAY['projectId'];
 $receiveCurrency = $GATEWAY['receive_currency'];
 
 $request = $_REQUEST;
-$client = new SCMerchantClient($merchantApiUrl, $merchantId, $appId);
+$client = new SCMerchantClient($merchantApiUrl, $merchantId, $projectId);
 $callback = $client->parseCreateOrderCallback($request);
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {

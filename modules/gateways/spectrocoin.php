@@ -11,8 +11,8 @@ function spectrocoin_config()
             'FriendlyName' => 'Merchant id',
             'Type'         => 'text'
         ),
-        'appId' => array(
-            'FriendlyName' => 'Application id',
+        'projectId' => array(
+            'FriendlyName' => 'Project id',
             'Type'         => 'text',
         ),
     );

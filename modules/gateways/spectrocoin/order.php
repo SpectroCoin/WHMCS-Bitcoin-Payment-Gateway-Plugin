@@ -29,11 +29,11 @@ if ($status != 'Unpaid') {
 
 $options = $_POST;
 $merchantId = $GATEWAY['merchantId'];
-$appId = $GATEWAY['appId'];
+$projectId = $GATEWAY['projectId'];
 $privateKeyFilePath = __DIR__ . '/keys/private';
 
 if (!file_exists($privateKeyFilePath) || !is_file($privateKeyFilePath)
-    || !$merchantId || !$appId)
+    || !$merchantId || !$projectId)
 {
     echo 'Spectrocoin is not fully configured. Please select different payment';
     exit;
@@ -49,7 +49,7 @@ $callbackUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.p
 $successUrl = $options['systemURL'] . '';
 $cancelUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoiceId;
 $merchantApiUrl = 'https://spectrocoin.com/api/merchant/1';
-$client = new SCMerchantClient($merchantApiUrl, $merchantId, $appId);
+$client = new SCMerchantClient($merchantApiUrl, $merchantId, $projectId);
 $privateKey = file_get_contents($privateKeyFilePath);
 $client->setPrivateMerchantKey($privateKey);
 $orderRequest = new CreateOrderRequest(null, "BTC", null, $currency, $amount, $orderDescription, "en", $callbackUrl, $successUrl, $cancelUrl);
