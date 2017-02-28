@@ -1,20 +1,20 @@
 SpectroCoin WHMCS Bitcoin Payment Extension
 ---------------
 
-This is a [SpectroCoin](https://spectrocoin.com/) Bitcoin Payment Module for WHMCS. This extenstion allows to easily accept bitcoins (and other cryptocurrencies such as DASH) at your WHMCS powered website. You can find a  how to install this extenstion. You can view [a tutorial how to integrate bitcoin payments for WHMCS](https://www.youtube.com/watch?v=AwvrjjCfJgc).
+This is a [SpectroCoin Bitcoin Payment Module for WHMCS](https://spectrocoin.com/en/plugins/accept-bitcoin-whmcs.html). This extenstion allows to easily accept bitcoins (and other cryptocurrencies such as DASH) at your WHMCS powered website. You can find a  how to install this extenstion. You can view [a tutorial how to integrate bitcoin payments for WHMCS](https://www.youtube.com/watch?v=AwvrjjCfJgc).
 
 To succesfully use this plugin, you have to have a SpectroCoin Bitcoin wallet. You can get it [here](https://spectrocoin.com/en/bitcoin-wallet.html). Also you have to create a merchant project to get merchant and project IDs, to do so create a new merchant project [here](https://spectrocoin.com/en/merchant/api/create.html).
 
 **INSTALLATION**
 
 1. Upload module content to your WHMCS folder.
-2. Generate private and public keys
-	1. Automatically<br />
+2. Generate private and public keys<br />
+	i. Automatically<br />
 	
 	Go to [SpectroCoin](https://spectrocoin.com/) -> [Project list](https://spectrocoin.com/en/merchant/api/list.html)
 	click on your project, then select "Edit Project and then click "Generate" (next to Public key field), as a result you will get an automatically generated private key, download and save it. The matching Public key will be generated automatically and added to your project.
 	
-	2. Manually<br />
+	ii. Manually<br />
     	
 	Private key:
     ```shell
@@ -38,7 +38,7 @@ To succesfully use this plugin, you have to have a SpectroCoin Bitcoin wallet. Y
 
 3. Go to Setup -> Payments -> Payment Gateways -> All Payment Gateways
 4. Select "Bitcoin provided by SpectroCoin" and press Activate
-5. Enter your Merchant Id, Application Id.
+5. Enter your Merchant ID, Project ID.
 
 **INFORMATION** 
 
