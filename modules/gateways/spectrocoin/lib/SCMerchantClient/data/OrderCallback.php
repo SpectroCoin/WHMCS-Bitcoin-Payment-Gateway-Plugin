@@ -1,8 +1,7 @@
 <?php
-
+		
 class OrderCallback
 {
-
 	private $merchantId;
 	private $apiId;
 	private $orderId;
@@ -15,7 +14,6 @@ class OrderCallback
 	private $orderRequestId;
 	private $status;
 	private $sign;
-
 	function __construct($merchantId, $apiId, $orderId, $payCurrency, $payAmount, $receiveCurrency, $receiveAmount, $receivedAmount, $description, $orderRequestId, $status, $sign)
 	{
 		$this->merchantId = $merchantId;
@@ -31,7 +29,7 @@ class OrderCallback
 		$this->status = $status;
 		$this->sign = $sign;
 	}
-
+	
 	/**
 	 * @return mixed
 	 */

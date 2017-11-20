@@ -4,16 +4,25 @@ function spectrocoin_config()
 {
     $configarray = array(
         "FriendlyName" => array(
-            "Type" => "System",
-            "Value"=>"Bitcoin provided by SpectroCoin"
+            "Type"         => "System",
+            "Value"        =>"Bitcoin provided by SpectroCoin"
         ),
         'merchantId' => array(
-            'FriendlyName' => 'Merchant id',
-            'Type'         => 'text'
+            "FriendlyName" => "Merchant id",
+            "Type"         => "text",
+            "Default"      => "Merchant id",
         ),
-        'projectId' => array(
-            'FriendlyName' => 'Project id',
-            'Type'         => 'text',
+        "projectId" => array(
+            "FriendlyName" => "Project id",
+            "Type"         => "text",
+            "Default" => "Project id",
+        ),
+        "privateKey" => array(
+            'FriendlyName' => 'Private key',
+            'Type'         => 'textarea',
+            "Rows"         => "5",
+            "Cols"         => "5",
+            "Default" => "Private key",
         ),
     );
     return $configarray;

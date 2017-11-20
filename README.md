@@ -8,7 +8,7 @@ To succesfully use this plugin, you have to have a SpectroCoin Bitcoin wallet. Y
 **INSTALLATION**
 
 1. Upload module content to your WHMCS folder.
-2. Generate private and public keys<br />
+2. Generate private key<br />
 	i. Automatically<br />
 	
 	Go to [SpectroCoin](https://spectrocoin.com/) -> [Project list](https://spectrocoin.com/en/merchant/api/list.html)
@@ -20,25 +20,14 @@ To succesfully use this plugin, you have to have a SpectroCoin Bitcoin wallet. Y
     ```shell
     # generate a 2048-bit RSA private key
     openssl genrsa -out "C:\private" 2048
-	
-    ```
-    <br />
-    	Public key:
-    ```shell
-    # output public key portion in PEM format
-    openssl rsa -in "C:\private" -pubout -outform PEM -out "C:\public"
     ```
 	<br />
-
-	Do not forget to add new Public key to your project by pasting it into Public key field under "Edit project" section. 
     
-4. Save private key to modules/gateways/spectrocoin/keys as "private"
-
 **CONFIGURATION**
 
 3. Go to Setup -> Payments -> Payment Gateways -> All Payment Gateways
 4. Select "Bitcoin provided by SpectroCoin" and press Activate
-5. Enter your Merchant ID, Project ID.
+5. Enter your Merchant ID, Project ID and Private key.
 
 **INFORMATION** 
 

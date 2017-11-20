@@ -16,17 +16,15 @@ include_once('messages/CreateOrderResponse.php');
 
 class SCMerchantClient
 {
-	
-	
+
 	private $merchantApiUrl;
 	private $privateMerchantCertLocation;
 	private $publicSpectroCoinCertLocation;
 	private $merchantId;
-	
 	private $apiId;
 	private $debug;
 	private $privateMerchantKey;
-	
+
 	/**
 	 * @param $merchantApiUrl
 	 * @param $merchantId
@@ -57,7 +55,7 @@ class SCMerchantClient
 		$payload = array(
 			'merchantId' => $this->merchantId,
 			'apiId' => $this->apiId,
-				'orderId' => $request->getOrderId(),
+			'orderId' => $request->getOrderId(),
 			'payCurrency' => $request->getPayCurrency(),
 			'payAmount' => $request->getPayAmount(),
 			'receiveCurrency' => $request->getReceiveCurrency(),
@@ -95,6 +93,7 @@ class SCMerchantClient
 	{
 		// fetch private key from file and ready it
 		$privateKey = $this->privateMerchantKey != null ? $this->privateMerchantKey : file_get_contents($this->privateMerchantCertLocation);
+		//$privateKey = $this->privateMerchantKey != null;
 		$pkeyid = openssl_pkey_get_private($privateKey);
 
 		// compute signature
