@@ -15,13 +15,6 @@ if (!$GATEWAY["type"]) {
 	exit("Spectrocoin module not activated");
 }
 
-$privateKey = __DIR__ . '/../spectrocoin/keys/private';
-
-if (!file_exists($privateKey) || !is_file($privateKey)) {
-	error_log('SpectroCoin. No private key file found');
-	exit('No private key file found');
-}
-
 $merchantId = $GATEWAY['merchantId'];
 $projectId = $GATEWAY['projectId'];
 $receiveCurrency = $GATEWAY['receive_currency'];
