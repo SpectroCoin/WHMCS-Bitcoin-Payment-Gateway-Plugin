@@ -5,7 +5,21 @@
  * This is a sample SpectroCoin Merchant v1.1 API PHP client
  */
  
-include_once('httpful.phar');
+include_once('Httpful/Bootstrap.php');
+include_once('Httpful/Handlers/FormHandler.php');
+include_once('Httpful/Response/Headers.php');
+include_once('Httpful/Response.php');
+include_once('Httpful/Httpful.php');
+include_once('Httpful/Handlers/CsvHandler.php');
+include_once('Httpful/Handlers/XmlHandler.php');
+include_once('Httpful/Exception/JsonParseException.php');
+include_once('Httpful/Exception/ConnectionErrorException.php');
+include_once('Httpful/Handlers/JsonHandler.php');
+include_once('Httpful/Http.php');
+include_once('Httpful/Mime.php');
+include_once('Httpful/Request.php');
+
+
 include_once('components/FormattingUtil.php');
 include_once('data/ApiError.php');
 include_once('data/OrderStatusEnum.php');
