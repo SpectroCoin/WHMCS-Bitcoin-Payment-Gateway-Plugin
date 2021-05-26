@@ -7,7 +7,7 @@ To succesfully use this plugin, you have to have a SpectroCoin Bitcoin wallet. Y
 
 **INSTALLATION**
 
-1. Upload module content to your WHMCS/modules/gateways folder.<br />
+1. Upload module content to your `WHMCS/modules/gateways` folder.<br />
 	OR <br />
   Navigate to WHMCS directory and run: <br />
       <br />
