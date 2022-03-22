@@ -7,7 +7,7 @@ function spectrocoin_config()
             "Type"         => "System",
             "Value"        =>"Bitcoin provided by SpectroCoin"
         ),
-        'merchantId' => array(
+        'userId' => array(
             "FriendlyName" => "Merchant id",
             "Type"         => "text",
             "Default"      => "Merchant id",

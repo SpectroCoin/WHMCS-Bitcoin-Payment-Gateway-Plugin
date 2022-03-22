@@ -34,24 +34,24 @@ class SCMerchantClient
 	private $merchantApiUrl;
 	private $privateMerchantCertLocation;
 	private $publicSpectroCoinCertLocation;
-	private $merchantId;
-	private $apiId;
+	private $userId;
+	private $merchantApiId;
 	private $debug;
 	private $privateMerchantKey;
 
 	/**
 	 * @param $merchantApiUrl
-	 * @param $merchantId
-	 * @param $apiId
+	 * @param $userId
+	 * @param $merchantApiId
 	 * @param bool $debug
 	 */
-	function __construct($merchantApiUrl, $merchantId, $apiId, $debug = false)
+	function __construct($merchantApiUrl, $userId, $merchantApiId, $debug = false)
 	{
 		$this->privateMerchantCertLocation = dirname(__FILE__) . '/../cert/mprivate.pem';
 		$this->publicSpectroCoinCertLocation = 'https://spectrocoin.com/files/merchant.public.pem';
 		$this->merchantApiUrl = $merchantApiUrl;
-		$this->merchantId = $merchantId;
-		$this->apiId = $apiId;
+		$this->userId = $userId;
+		$this->merchantApiId = $merchantApiId;
 		$this->debug = $debug;
 	}
 	/**
@@ -67,8 +67,8 @@ class SCMerchantClient
 	public function createOrder(CreateOrderRequest $request)
 	{
 		$payload = array(
-			'merchantId' => $this->merchantId,
-			'apiId' => $this->apiId,
+			'userId' => $this->userId,
+			'merchantApiId' => $this->merchantApiId,
 			'orderId' => $request->getOrderId(),
 			'payCurrency' => $request->getPayCurrency(),
 			'payAmount' => $request->getPayAmount(),
@@ -127,8 +127,8 @@ class SCMerchantClient
 	{
 		$result = null;
 
-		if ($r != null && isset($r['merchantId'], $r['apiId'], $r['orderId'], $r['payCurrency'], $r['payAmount'], $r['receiveCurrency'], $r['receiveAmount'], $r['receivedAmount'], $r['description'], $r['orderRequestId'], $r['status'], $r['sign'])) {
-			$result = new OrderCallback($r['merchantId'], $r['apiId'], $r['orderId'], $r['payCurrency'], $r['payAmount'], $r['receiveCurrency'], $r['receiveAmount'], $r['receivedAmount'], $r['description'], $r['orderRequestId'], $r['status'], $r['sign']);
+		if ($r != null && isset($r['userId'], $r['merchantApiId'], $r['orderId'], $r['payCurrency'], $r['payAmount'], $r['receiveCurrency'], $r['receiveAmount'], $r['receivedAmount'], $r['description'], $r['orderRequestId'], $r['status'], $r['sign'])) {
+			$result = new OrderCallback($r['userId'], $r['merchantApiId'], $r['orderId'], $r['payCurrency'], $r['payAmount'], $r['receiveCurrency'], $r['receiveAmount'], $r['receivedAmount'], $r['description'], $r['orderRequestId'], $r['status'], $r['sign']);
 		}
 
 		return $result;
@@ -144,15 +144,15 @@ class SCMerchantClient
 
 		if ($c != null) {
 
-			if ($this->merchantId != $c->getMerchantId() || $this->apiId != $c->getApiId())
+			if ($this->userId != $c->getUserId() || $this->merchantApiId != $c->getMerchantApiId())
 				return $valid;
 
 			if (!$c->validate())
 				return $valid;
 
 			$payload = array(
-				'merchantId' => $c->getMerchantId(),
-				'apiId' => $c->getApiId(),
+				'userId' => $c->getUserId(),
+				'merchantApiId' => $c->getMerchantApiId(),
 				'orderId' => $c->getOrderId(),
 				'payCurrency' => $c->getPayCurrency(),
 				'payAmount' => $c->getPayAmount(),
