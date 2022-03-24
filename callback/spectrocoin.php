@@ -15,12 +15,12 @@ if (!$GATEWAY["type"]) {
 	exit("Spectrocoin module not activated");
 }
 
-$merchantId = $GATEWAY['merchantId'];
+$userId = $GATEWAY['userId'];
 $projectId = $GATEWAY['projectId'];
 $receiveCurrency = $GATEWAY['receive_currency'];
 
 $request = $_REQUEST;
-$client = new SCMerchantClient($merchantApiUrl, $merchantId, $projectId);
+$client = new SCMerchantClient($merchantApiUrl, $userId, $projectId);
 $callback = $client->parseCreateOrderCallback($request);
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
