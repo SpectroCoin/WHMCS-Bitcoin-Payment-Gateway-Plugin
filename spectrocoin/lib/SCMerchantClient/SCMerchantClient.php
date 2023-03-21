@@ -127,7 +127,7 @@ class SCMerchantClient
 	{
 		$result = null;
 
-		if ($r != null && isset($r['userId'], $r['merchantApiId'], $r['orderId'], $r['payCurrency'], $r['payAmount'], $r['receiveCurrency'], $r['receiveAmount'], $r['receivedAmount'], $r['description'], $r['orderRequestId'], $r['status'], $r['sign'])) {
+		if ($r != null && isset($r['userId'], $r['merchantApiId'], $r['merchantId'], $r['apiId'], $r['orderId'], $r['payCurrency'], $r['payAmount'], $r['receiveCurrency'], $r['receiveAmount'], $r['receivedAmount'], $r['description'], $r['orderRequestId'], $r['status'], $r['sign'])) {
 			$result = new OrderCallback($r['userId'], $r['merchantApiId'], $r['orderId'], $r['payCurrency'], $r['payAmount'], $r['receiveCurrency'], $r['receiveAmount'], $r['receivedAmount'], $r['description'], $r['orderRequestId'], $r['status'], $r['sign']);
 		}
 
@@ -151,8 +151,8 @@ class SCMerchantClient
 				return $valid;
 
 			$payload = array(
-				'userId' => $c->getUserId(),
-				'merchantApiId' => $c->getMerchantApiId(),
+				'merchantId' => $c->getMerchantId(),
+				'apiId' => $c->getApiId(),
 				'orderId' => $c->getOrderId(),
 				'payCurrency' => $c->getPayCurrency(),
 				'payAmount' => $c->getPayAmount(),
