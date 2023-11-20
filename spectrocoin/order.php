@@ -47,9 +47,9 @@ if ($amount < 0) {
 }
 
 $orderDescription = "Order #{$invoiceId}";
-$callbackUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId;
+$callbackUrl = $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId;
 $successUrl = $options['systemURL'] . '';
-$cancelUrl = $options['systemURL'] . '/modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoiceId;
+$cancelUrl = $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoiceId;
 $merchantApiUrl = 'https://spectrocoin.com/api/merchant/1';
 $client = new SCMerchantClient($merchantApiUrl, $userId, $projectId);
 $client->setPrivateMerchantKey($privateKey);
