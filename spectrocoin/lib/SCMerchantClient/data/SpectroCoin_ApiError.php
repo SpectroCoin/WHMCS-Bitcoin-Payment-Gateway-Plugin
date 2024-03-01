@@ -1,6 +1,6 @@
 <?php
 
-class ApiError
+class SpectroCoin_ApiError
 {
 	private $code;
 	private $message;
@@ -30,6 +30,4 @@ class ApiError
 	{
 		return $this->message;
 	}
-
-
 }

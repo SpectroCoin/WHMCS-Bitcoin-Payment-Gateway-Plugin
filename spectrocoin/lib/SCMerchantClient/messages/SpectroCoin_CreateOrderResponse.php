@@ -1,8 +1,7 @@
 <?php
 
-class CreateOrderResponse
+class SpectroCoin_CreateOrderResponse
 {
-
 	private $depositAddress;
 	private $orderId;
 	private $orderRequestId;
