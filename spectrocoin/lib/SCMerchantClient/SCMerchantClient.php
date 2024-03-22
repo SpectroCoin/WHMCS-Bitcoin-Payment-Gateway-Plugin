@@ -68,9 +68,12 @@ class SCMerchantClient
 	public function spectrocoinCreateOrder(SpectroCoin_CreateOrderRequest $request)
 	{
 		$this->access_token_data = $this->spectrocoinGetAccessTokenData();
-
+		
 		if (!$this->access_token_data) {
-			return new SpectroCoin_ApiError('AuthError', 'Failed to obtain access token');
+			return new SpectroCoin_ApiError('AuthError', 'Failed to obtain or refresh access token');
+		}
+		else if ($this->access_token_data instanceof SpectroCoin_ApiError) {
+			return $this->access_token_data;
 		}
 
 		$payload = array(
