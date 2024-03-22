@@ -28,12 +28,9 @@ if ($status != 'Unpaid') {
 }
 
 $options = $_POST;
-$userId = $GATEWAY['userId'];
-$projectId = $GATEWAY['projectId'];
-$privateKey = $GATEWAY['privateKey'];
-
-if (!file_exists($privateKeyFilePath) || !is_file($privateKeyFilePath)
-    || !$userId || !$projectId)
+$project_id = $GATEWAY['projectId'];
+$client_id = $GATEWAY['clientId'];
+$client_secret = $GATEWAY['clientSecret'];
 
 if (!$privateKey || !$userId || !$projectId)
 {
@@ -41,21 +38,23 @@ if (!$privateKey || !$userId || !$projectId)
     exit;
 }
 if ($amount < 0) {
-    error_log('SpectroCoin error. Amount is negativ');
+    error_log('SpectroCoin error. Amount is negative');
     echo 'SpectroCoin is not fully configured. Please select different payment';
     exit;
 }
+
+$auth_url = "https://test.spectrocoin.com/api/public/oauth/token";
+$api_url = 'https://spectrocoin.com/api/merchant/1';
 
 $orderDescription = "Order #{$invoiceId}";
 $callbackUrl = $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId;
 $successUrl = $options['systemURL'] . '';
 $cancelUrl = $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoiceId;
-$merchantApiUrl = 'https://spectrocoin.com/api/merchant/1';
+
 $client = new SCMerchantClient($merchantApiUrl, $userId, $projectId);
-$client->setPrivateMerchantKey($privateKey);
-$orderRequest = new CreateOrderRequest(null, "BTC", null, $currency, $amount, $orderDescription, "en", $callbackUrl, $successUrl, $cancelUrl);
-$response =$client->createOrder($orderRequest);
-if ($response instanceof ApiError) {
+$orderRequest = new Spectrocoin_CreateOrderRequest(null, "BTC", null, $currency, $amount, $orderDescription, "en", $callbackUrl, $successUrl, $cancelUrl);
+$response =$client->spectrocoinCreateOrder($orderRequest);
+if ($response instanceof Spectrocoin_ApiError) {
     error_log('Error getting response from SpectroCoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage());
     echo 'Error getting response from SpectroCoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage();
     exit;

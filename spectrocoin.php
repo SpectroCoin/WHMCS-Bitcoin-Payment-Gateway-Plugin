@@ -5,7 +5,7 @@ function spectrocoin_config()
     $configarray = array(
         "FriendlyName" => array(
             "Type"         => "System",
-            "Value"        =>"Crypto payment by SpectroCoin"
+            "Value"        => "Crypto payment by SpectroCoin"
         ),
         "projectId" => array(
             "FriendlyName" => "Project id",
