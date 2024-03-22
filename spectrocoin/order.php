@@ -37,12 +37,12 @@ if (!file_exists($privateKeyFilePath) || !is_file($privateKeyFilePath)
 
 if (!$privateKey || !$userId || !$projectId)
 {
-    echo 'Spectrocoin is not fully configured. Please select different payment';
+    echo 'SpectroCoin is not fully configured. Please select different payment';
     exit;
 }
 if ($amount < 0) {
-    error_log('Spectrocoin error. Amount is negativ');
-    echo 'Spectrocoin is not fully configured. Please select different payment';
+    error_log('SpectroCoin error. Amount is negativ');
+    echo 'SpectroCoin is not fully configured. Please select different payment';
     exit;
 }
 
@@ -56,8 +56,8 @@ $client->setPrivateMerchantKey($privateKey);
 $orderRequest = new CreateOrderRequest(null, "BTC", null, $currency, $amount, $orderDescription, "en", $callbackUrl, $successUrl, $cancelUrl);
 $response =$client->createOrder($orderRequest);
 if ($response instanceof ApiError) {
-    error_log('Error getting response from Spectrocoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage());
-    echo 'Error getting response from Spectrocoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage();
+    error_log('Error getting response from SpectroCoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage());
+    echo 'Error getting response from SpectroCoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage();
     exit;
 } else {
 	$redirectUrl = $response->getRedirectUrl();
