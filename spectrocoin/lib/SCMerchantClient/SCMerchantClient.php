@@ -4,14 +4,14 @@
  use GuzzleHttp\Exception\GuzzleException;
  use GuzzleHttp\RequestOptions;
 
- include_once('components/SpectroCoin_Utilities.php');
+include_once('components/SpectroCoin_Utilities.php');
 include_once('data/SpectroCoin_ApiError.php');
 include_once('data/SpectroCoin_OrderStatusEnum.php');
 include_once('data/SpectroCoin_OrderCallback.php');
 include_once('messages/SpectroCoin_CreateOrderRequest.php');
 include_once('messages/SpectroCoin_CreateOrderResponse.php');
 
-require __DIR__ . '/../../../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 
 class SCMerchantClient
 {
