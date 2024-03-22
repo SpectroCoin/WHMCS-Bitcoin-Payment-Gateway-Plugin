@@ -52,7 +52,7 @@ class SCMerchantClient
 		$this->auth_url = $auth_url;
 		$this->guzzle_client = new Client();
 		$this->public_spectrocoin_cert_location = "https://test.spectrocoin.com/public.pem"; //PROD:https://spectrocoin.com/files/merchant.public.pem
-		
+		$this->encryption_key = SpectroCoin_Utilities::spectrocoinGenerateEncryptionKey();
 	}
 
 	/**
