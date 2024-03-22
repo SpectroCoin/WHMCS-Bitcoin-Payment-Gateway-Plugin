@@ -1,12 +1,6 @@
 <?php
 
-/**
- * Created by UAB Spectro Fincance.
- * This is a sample SpectroCoin Merchant v1.1 API PHP client
- */
- 
  use GuzzleHttp\Client;
- use GuzzleHttp\Exception\RequestException;
  use GuzzleHttp\Exception\GuzzleException;
  use GuzzleHttp\RequestOptions;
 
@@ -21,7 +15,6 @@ require __DIR__ . '/../../../vendor/autoload.php';
 
 class SCMerchantClient
 {
-
 	private $merchant_api_url;
 	private $project_id;
 	private $client_id;
@@ -32,7 +25,6 @@ class SCMerchantClient
 	private $access_token_data;
 	private $public_spectrocoin_cert_location;
 	protected $guzzle_client;
-
 
 	/**
 	 * @param $merchant_api_url
@@ -52,7 +44,7 @@ class SCMerchantClient
 		$this->auth_url = $auth_url;
 		$this->guzzle_client = new Client();
 		$this->public_spectrocoin_cert_location = "https://test.spectrocoin.com/public.pem"; //PROD:https://spectrocoin.com/files/merchant.public.pem
-		$this->encryption_key = SpectroCoin_Utilities::spectrocoinGenerateEncryptionKey();
+		$this->encryption_key = $this->initializeEncryptionKey();
 	}
 
 	/**
@@ -198,20 +190,35 @@ class SCMerchantClient
 	}
 
 	/**
-	 * Stores the encrypted access token data in
-	 * @param string $encrypted_access_token_data
-	 */
-	private function storeEncryptedData($encrypted_access_token_data) {
-		//?
-	}
+     * Initializes the encryption key used for securing sensitive data.
+     * The key is stored in the session. If it's not already set in the session, a new key is generated.
+     */
+    private function initializeEncryptionKey() {
+        if (!isset($_SESSION['encryption_key'])) {
+            $_SESSION['encryption_key'] = SpectroCoin_Utilities::spectrocoinGenerateEncryptionKey();
+        }
+        return $_SESSION['encryption_key'];
+    }
 
-	/**
-	 * Retrieves the encrypted access token data from 
-	 * @param string $encrypted_access_token_data
-	 */
-	private function retrieveEncryptedData() {
-		//?
-	}
+    /**
+     * Stores the encrypted access token data in the session.
+     * @param string $encrypted_access_token_data The encrypted token data to store.
+     */
+    private function storeEncryptedData($encrypted_access_token_data) {
+        $_SESSION['encrypted_access_token_data'] = $encrypted_access_token_data;
+    }
+
+    /**
+     * Retrieves the encrypted access token data from the session.
+     * @return string|false The encrypted access token data, or false if not set.
+     */
+    private function retrieveEncryptedData() {
+        if (isset($_SESSION['encrypted_access_token_data'])) {
+            return $_SESSION['encrypted_access_token_data'];
+        } else {
+            return false;
+        }
+    }
 
 	// --------------- VALIDATION AND SANITIZATION BEFORE REQUEST -----------------
 
