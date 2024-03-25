@@ -47,7 +47,7 @@ $success_url = $options['systemURL'] . '';
 $cancel_url = $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoice_id;
 
 $auth_url = "https://test.spectrocoin.com/api/public/oauth/token";
-$api_url = 'https://spectrocoin.com/api/merchant/1';
+$api_url = 'https://test.spectrocoin.com/api/public';
 
 $client = new SCMerchantClient($api_url, $project_id, $client_id, $client_secret, $auth_url);
 $order_request = new Spectrocoin_CreateOrderRequest(null, "BTC", null, $currency, $amount, $order_description, "en", $callback_url, $success_url, $cancel_url);

@@ -1,0 +1,31 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-gateways",
+  "name": "spectrocoin",
+  "license": "GPL-2.0",
+  "category": "payments",
+  "description": {
+    "name": "SpectroCoin",
+    "tagline": "Cryptocurrency Payment Gateway",
+    "long": "SpectroCoin offers a comprehensive suite of services for cryptocurrency users and investors. With a focus on convenience, security, and versatility, SpectroCoin provides a platform where users can buy, sell, store, and exchange a wide variety of cryptocurrencies alongside fiat currencies. With SpectroCoin's payment extension for WHMCS, you can accept a wide range of cryptocurrencies, including BTC, ETH, USDT, and over 25 other popular digital assets, right on your online store.",
+    "features": [
+      "Accept Multiple Cryptocurrencies: Easily add BTC, ETH, USDT, and 25+ other cryptocurrencies to your WooCommerce site.",
+      "Avoid price volatility by settling payments in EUR, USD, GBP, or 20+ supported fiat currencies.",
+      "Ensure safe and secure crypto transactions for you and your customers."
+    ]
+  },
+  "logo": {
+    "filename": "logo.png"
+  },
+  "support": {
+    "homepage": "https://spectrocoin.com/integration/plugins.html",
+    "email": "merchant@spectrocoin.com",
+    "docs_url": "https://spectrocoin.com/integration/spectrocoin.html"
+  },
+  "authors": [
+    {
+      "name": "SpectroCoin",
+      "homepage": "https://spectrocoin.com"
+    }
+  ]
+}

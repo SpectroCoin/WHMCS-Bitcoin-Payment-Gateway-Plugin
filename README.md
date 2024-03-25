@@ -6,7 +6,7 @@ Integrate cryptocurrency payments seamlessly into your WHMCS store with the [Spe
 
 1. Download latest release from github.
 2. Extract the contents of the zip file.
-3. Access WHMCS site root directory via ftp and navigate to <i>/modules/gateways/</i>, upload <i>spectrocoin</i> folder and <i>spectrocoin.php</i> file.
+3. Access WHMCS site root directory via ftp and navigate to <i>/modules/gateways/</i>, upload <i>spectrocoin</i>, <i>spectrocoin.php</i>, <i>logo.png</i> and <i>whmcs.json</i>
 4. Navigate to <i>/callback/</i> folder and upload <i>spectrocoin.php</i> file.
 5. From WHMCS admin dashboard navigate to <b>"Addons"</b> -> <b>"Apps & Integrations"</b> -> <b>"Payment Gateways"</b> -> <b>"All Payment Gateways"</b> -> <b>"Browse"</b> -> <b>"Payments"</b> -> <b>"SpectroCoin"</b> -> <b>"Manage"</b>.
 6. Move to section [Setting up](#setting-up).
