@@ -15,16 +15,29 @@ if (!$GATEWAY["type"]) {
 	exit("Spectrocoin module not activated");
 }
 
-$userId = $GATEWAY['userId'];
-$projectId = $GATEWAY['projectId'];
+$project_id = $GATEWAY['projectId'];
+$client_id = $GATEWAY['clientId'];
+$client_secret = $GATEWAY['clientSecret'];
 $receiveCurrency = $GATEWAY['receive_currency'];
 
 $request = $_REQUEST;
-$client = new SCMerchantClient($merchantApiUrl, $userId, $projectId);
-$callback = $client->parseCreateOrderCallback($request);
+$auth_url = "https://test.spectrocoin.com/api/public/oauth/token";
+$api_url = 'https://test.spectrocoin.com/api/public';
+$client = new SCMerchantClient($api_url, $project_id, $client_id, $client_secret, $auth_url);
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
-{
-	if ($callback != null && $client->validateCreateOrderCallback($callback)){
+{	
+	$expected_keys = ['userId', 'merchantApiId', 'merchantId', 'apiId', 'orderId', 'payCurrency', 'payAmount', 'receiveCurrency', 'receiveAmount', 'receivedAmount', 'description', 'orderRequestId', 'status', 'sign'];
+
+	$post_data = [];
+	foreach ($expected_keys as $key) {
+		if (isset($_POST[$key])) {
+			$post_data[$key] = $_POST[$key];
+		}
+	}
+	$callback = $this->scClient->spectrocoinProcessCallback($post_data);
+	if ($callback != null){
 		if (!isset($_GET['invoice_id'])) {
 			error_log('SpectroCoin error. invoice_id is not provided');
 			exit('SpectroCoin error. invoice_id is not provided');
