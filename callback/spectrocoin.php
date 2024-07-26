@@ -1,18 +1,24 @@
 <?php
-# Required File Includes
+
+declare(strict_types=1);
+
 include '../../../init.php';
 include '../../../includes/functions.php';
 include '../../../includes/gatewayfunctions.php';
 include '../../../includes/invoicefunctions.php';
-require_once '../spectrocoin/lib/SCMerchantClient/SCMerchantClient.php';
 
-$gatewaymodule = "spectrocoin";
-$GATEWAY = getGatewayVariables($gatewaymodule);
+use SpectroCoin\SCMerchantClient\Enum\OrderStatus;
+use SpectroCoin\SCMerchantClient\Http\OrderCallback;
+
+if (!defined("WHMCS")) {
+    die('Access denied.');
+}
+
+$gatewayModuleName = basename(__FILE__, '.php');
+$GATEWAY = getGatewayVariables($gatewayModuleName);
 
 if (!$GATEWAY["type"]) {
-	logTransaction($GATEWAY["name"], $_POST, 'Not activated');
-	error_log('Spectrocoin module not activated');
-	exit("Spectrocoin module not activated");
+    logAndExit('SpectroCoin module not activated', 500);
 }
 
 $project_id = $GATEWAY['projectId'];
@@ -20,60 +26,84 @@ $client_id = $GATEWAY['clientId'];
 $client_secret = $GATEWAY['clientSecret'];
 $receiveCurrency = $GATEWAY['receive_currency'];
 
-$request = $_REQUEST;
-$auth_url = "https://test.spectrocoin.com/api/public/oauth/token";
-$api_url = 'https://test.spectrocoin.com/api/public';
-$client = new SCMerchantClient($api_url, $project_id, $client_id, $client_secret, $auth_url);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $expected_keys = [
+            'userId', 'merchantApiId', 'merchantId', 'apiId', 'orderId', 'payCurrency', 
+            'payAmount', 'receiveCurrency', 'receiveAmount', 'receivedAmount', 
+            'description', 'orderRequestId', 'status', 'sign'
+        ];
 
+        $callback_data = [];
+        foreach ($expected_keys as $key) {
+            if (isset($_POST[$key])) {
+                $callback_data[$key] = $_POST[$key];
+            }
+        }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST')
-{	
-	$expected_keys = ['userId', 'merchantApiId', 'merchantId', 'apiId', 'orderId', 'payCurrency', 'payAmount', 'receiveCurrency', 'receiveAmount', 'receivedAmount', 'description', 'orderRequestId', 'status', 'sign'];
+        if (empty($callback_data)) {
+            logAndExit('No data received in callback', 400);
+        }
 
-	$post_data = [];
-	foreach ($expected_keys as $key) {
-		if (isset($_POST[$key])) {
-			$post_data[$key] = $_POST[$key];
-		}
-	}
-	$callback = $this->scClient->spectrocoinProcessCallback($post_data);
-	if ($callback != null){
-		if (!isset($_GET['invoice_id'])) {
-			error_log('SpectroCoin error. invoice_id is not provided');
-			exit('SpectroCoin error. invoice_id is not provided');
-		}
-		$invoiceId = intval($_GET['invoice_id']);
-		$status = $callback->getStatus();
+        $order_callback = new OrderCallback($callback_data);
+        if ($order_callback === null) {
+            logAndExit('Invalid callback', 400);
+        }
 
-		switch ($status) {
-			case OrderStatusEnum::$Test:
-			case OrderStatusEnum::$New:
-			case OrderStatusEnum::$Pending:
-			case OrderStatusEnum::$Expired:
-			case OrderStatusEnum::$Failed:
-				break;
-			case OrderStatusEnum::$Paid:
-				$invoiceId = checkCbInvoiceID($invoiceId, $GATEWAY["name"]);
-				$transId = "SC".$callback->getOrderRequestId();
-				checkCbTransID($transId);
-				$result = select_query('tblinvoices', 'total', array('id'=>$invoiceId));
-				$data = mysql_fetch_array($result);
-				$amount = $data['total'];
-				$fee = 0;
-				addInvoicePayment($invoiceId, $transId, $amount, $fee, $gatewaymodule);
-				logActivity("Received SpectroCoin paid callback for invoice #$invoiceId. Transaction #$transId: Received amount: $amount $receiveCurrency, Paid amount: " . $callback->getReceivedAmount() . " ". $callback->getPayCurrency());
-				break;
-			default:
-				error_log('SpectroCoin callback error. Unknown order status: ' . $status);
-				exit('Unknown order status: ' . $status);
-		}
-		echo '*ok*';
-		
-		
-	} else {
-		error_log('SpectroCoin error. Invalid callback');
-		exit('SpectroCoin error. Invalid callback');
-	}
+        $invoice_id = explode('-', ($order_callback->getOrderId()))[0];
+        $status = $order_callback->getStatus();
+
+        if ($invoice_id) {
+            switch ($status) {
+                case OrderStatus::New->value:
+                case OrderStatus::Pending->value:
+                    break;
+                case OrderStatus::Paid->value:
+                    $invoice_id = checkCbInvoiceID($invoice_id, $GATEWAY["name"]);
+                    $transId = "SC" . $order_callback->getOrderRequestId();
+                    checkCbTransID($transId);
+                    $result = select_query('tblinvoices', 'total', ['id' => $invoice_id]);
+                    $data = mysql_fetch_array($result);
+                    $amount = (float) $data['total'];
+                    $fee = 0.0;
+                    addInvoicePayment($invoice_id, $transId, $amount, $fee, $gatewayModuleName);
+                    break;
+                case OrderStatus::Failed->value:
+					logActivity($gatewayModuleName, 'Invoice '.$invoice_id.': Status '.$status);
+                case OrderStatus::Expired->value:
+                    logActivity($gatewayModuleName, 'Invoice '.$invoice_id.': Status: Expired');
+                    break;
+                default:
+                    logAndExit('Unknown order status: '.$status, 400);
+            }
+            http_response_code(200); // OK
+            echo '*ok*';
+            exit;
+        } else {
+            logAndExit("Invoice '{$invoice_id}' not found!", 404);
+        }
+    } catch (Exception $e) {
+        logAndExit($e->getMessage(), 500);
+    }
 } else {
-	header('Location: /');
+    header('Location: /');
+	logAndExit('Invalid request method: '.$e->getMessage(), 500);
+    http_response_code(405); // Method Not Allowed
+    exit;
 }
+
+/**
+ * Logs a transaction and exits with a specified HTTP response code and message.
+ *
+ * @param string $message
+ * @param string $status
+ * @param int $httpCode
+ * @param string $gatewayModuleName
+ * @return void
+ */
+function logAndExit(string $message, int $httpCode): void {
+    logActivity("SpectroCoin error: " . $message);
+    http_response_code($httpCode);
+    exit($message);
+}
+?>

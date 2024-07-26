@@ -1,5 +1,10 @@
 {
-    "require": {
-        "guzzlehttp/guzzle": "^7.8"
+  "require": {
+    "guzzlehttp/guzzle": "^7.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "SpectroCoin\\SCMerchantClient\\": "lib/SCMerchantClient/"
     }
+  }
 }
