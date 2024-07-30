@@ -10,6 +10,8 @@ include '../../../includes/invoicefunctions.php';
 use SpectroCoin\SCMerchantClient\Enum\OrderStatus;
 use SpectroCoin\SCMerchantClient\Http\OrderCallback;
 
+require __DIR__ . '/../spectrocoin/vendor/autoload.php';
+
 if (!defined("WHMCS")) {
     die('Access denied.');
 }
@@ -57,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             switch ($status) {
                 case OrderStatus::New->value:
                 case OrderStatus::Pending->value:
+                    logTransaction($gatewayModuleName, "Invoice $invoice_id status is $status.", 'Status Update');
                     break;
                 case OrderStatus::Paid->value:
                     $invoice_id = checkCbInvoiceID($invoice_id, $GATEWAY["name"]);
@@ -67,14 +70,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $amount = (float) $data['total'];
                     $fee = 0.0;
                     addInvoicePayment($invoice_id, $transId, $amount, $fee, $gatewayModuleName);
+                    logTransaction($gatewayModuleName, "Payment added for Invoice $invoice_id. Transaction ID: $transId, Amount: $amount", 'Payment Success');
                     break;
                 case OrderStatus::Failed->value:
-					logActivity($gatewayModuleName, 'Invoice '.$invoice_id.': Status '.$status);
                 case OrderStatus::Expired->value:
-                    logActivity($gatewayModuleName, 'Invoice '.$invoice_id.': Status: Expired');
+                    logTransaction($gatewayModuleName, "Invoice $invoice_id status is $status.", 'Status Update');
+                    update_query('tblinvoices', ['status' => 'Cancelled'], ['id' => $invoice_id]);
                     break;
                 default:
-                    logAndExit('Unknown order status: '.$status, 400);
+                    logAndExit('Unknown order status: '. $status, 400);
             }
             http_response_code(200); // OK
             echo '*ok*';
@@ -86,9 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         logAndExit($e->getMessage(), 500);
     }
 } else {
+    logTransaction($gatewayModuleName, 'Invalid request method.', 'Error');
     header('Location: /');
-	logAndExit('Invalid request method: '.$e->getMessage(), 500);
-    http_response_code(405); // Method Not Allowed
+    logAndExit('Invalid request method', 405);
     exit;
 }
 
@@ -96,13 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  * Logs a transaction and exits with a specified HTTP response code and message.
  *
  * @param string $message
- * @param string $status
  * @param int $httpCode
- * @param string $gatewayModuleName
  * @return void
  */
 function logAndExit(string $message, int $httpCode): void {
-    logActivity("SpectroCoin error: " . $message);
+    global $gatewayModuleName;
+    logTransaction($gatewayModuleName, $message, 'Error');
     http_response_code($httpCode);
     exit($message);
 }

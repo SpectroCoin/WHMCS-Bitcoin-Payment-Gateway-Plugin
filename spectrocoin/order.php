@@ -155,23 +155,15 @@ function initializeMerchantClient(array $gateway): SCMerchantClient
  */
 function createOrderData(int $invoiceId, array $invoice_data, array $options): array
 {
-    // Create the order data array
     $orderData = [
         'orderId' => $invoiceId . "-" . rand(1000, 9999),
         'description' => "Order #{$invoiceId}",
         'receiveAmount' => $invoice_data['total'],
         'receiveCurrencyCode' => $invoice_data['code'],
-        'callbackUrl' => 'https://cms-whmcs.bankera.cloud/modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId,
-        'successUrl' => $options['systemURL'] . '',
-        'failureUrl' => $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoiceId
+        'callbackUrl' => 'https://cms-whmcs.bankera.cloud/modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId, // change when done updating
+        'successUrl' => $options['systemURL'] . 'clientarea.php?action=invoices',
+        'failureUrl' => $options['systemURL'] . 'clientarea.php?action=invoices'
     ];
-
-    // Convert the array to a JSON string for logging
-    $orderDataString = json_encode($orderData);
-
-    // Log the array data
-    logActivity("Order Data: " . $orderDataString);
-
     return $orderData;
 }
 

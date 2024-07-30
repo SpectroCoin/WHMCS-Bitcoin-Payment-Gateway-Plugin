@@ -24,24 +24,11 @@ Integrate cryptocurrency payments seamlessly into your WHMCS store with the [Spe
 9. Add "API name", in scope groups select **"View merchant preorders"**, **"Create merchant preorders"**, **"View merchant orders"**, **"Create merchant orders"**, **"Cancel merchant orders"** and click **"Create API"**.
 10. Copy and store "Client id" and "Client secret". Save the settings.
 
-## Test order creation on localhost
-
-We gently suggest trying out the plugin in a server environment, as it will not be capable of receiving callbacks from SpectroCoin if it will be hosted on localhost. To successfully create an order on localhost for testing purposes, <b>change these 3 lines in <em>SCMechantClient.php spectrocoinCreateOrder() function</em></b>:
-
-`'callbackUrl' => $request->getCallbackUrl()`, <br>
-`'successUrl' => $request->getSuccessUrl()`, <br>
-`'failureUrl' => $request->getFailureUrl()`
-
-<b>To</b>
-
-`'callbackUrl' => 'http://localhost.com'`, <br>
-`'successUrl' => 'http://localhost.com'`, <br>
-`'failureUrl' => 'http://localhost.com'`
-
-Adjust it appropriately if your local environment URL differs.
-Don't forget to change it back when migrating website to public.
-
 ## Information
+
+We gently suggest trying out the plugin in a server environment, as it will not be capable of receiving callbacks from SpectroCoin if it will be hosted on localhost.
+
+## Contact
 
 This client has been developed by SpectroCoin.com If you need any further support regarding our services you can contact us via:
 

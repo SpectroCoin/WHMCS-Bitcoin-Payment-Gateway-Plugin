@@ -33,3 +33,7 @@ _Added_ documentation with parameters and return variables before every function
 _Added_ validation and sanitization when request payload is created and also received.
 
 _Added_ validation and sanitization when callback is received.
+
+_Added_ Expired/Failed orders handling as "Cancelled" invoice status.
+
+_Changed_ success and failure URL's to clientarea.php?action=invoices'.
