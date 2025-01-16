@@ -64,10 +64,13 @@ jobs:
           cp -r spectrocoin release_temp/
           cp -r callback release_temp/
           cp spectrocoin.php release_temp/
-          # Create the zip
-          zip -r spectrocoin.zip -j release_temp/*
+          # Create the zip without using -j to preserve directory structure
+          cd release_temp
+          zip -r ../spectrocoin.zip .
+          cd ..
           rm -rf release_temp
         shell: bash
+
 
       - name: Upload spectrocoin.zip as release asset
         if: env.TAG_EXISTS == 'false'
