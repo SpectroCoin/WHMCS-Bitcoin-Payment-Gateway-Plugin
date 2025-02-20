@@ -1,37 +1,37 @@
 <?php
 
+if (!defined("WHMCS")) {
+    die("This file cannot be accessed directly");
+}
+
+
 function spectrocoin_config()
 {
     $configarray = array(
         "FriendlyName" => array(
             "Type"         => "System",
-            "Value"        =>"Bitcoin provided by SpectroCoin"
-        ),
-        'userId' => array(
-            "FriendlyName" => "Merchant id",
-            "Type"         => "text",
-            "Default"      => "Merchant id",
+            "Value"        => "Crypto payment by SpectroCoin"
         ),
         "projectId" => array(
             "FriendlyName" => "Project id",
             "Type"         => "text",
-            "Default" => "Project id",
+            "Default"      => "Project id",
         ),
-        "privateKey" => array(
-            'FriendlyName' => 'Private key',
-            'Type'         => 'textarea',
-            "Rows"         => "5",
-            "Cols"         => "5",
-            "Default" => "Private key",
+        'clientId' => array(
+            "FriendlyName" => "Client id",
+            "Type"         => "text",
+            "Default"      => "Client id",
+        ),
+        'clientSecret' => array(
+            "FriendlyName" => "Client secret",
+            "Type"         => "text",
+            "Default"      => "Client secret",
         ),
     );
     return $configarray;
 }
-/**
- * @param array $params
- *
- * @return string
- */
+
+
 function spectrocoin_link($params)
 {
     # Invoice Variables
@@ -61,7 +61,7 @@ function spectrocoin_link($params)
         'buyerEmail'    => $email,
         'buyerPhone'    => $phone,
     );
-    $form = '<form action="'.$systemurl.'/modules/gateways/spectrocoin/order.php" method="POST">';
+    $form = '<form action="'.$systemurl.'modules/gateways/spectrocoin/order.php" method="POST">';
     foreach ($post as $key => $value) {
         $form.= '<input type="hidden" name="'.$key.'" value = "'.$value.'" />';
     }

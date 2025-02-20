@@ -1,65 +1,184 @@
 <?php
-include '../../../init.php';
-include '../../../includes/functions.php';
-include '../../../includes/gatewayfunctions.php';
-include '../../../includes/invoicefunctions.php';
-require_once 'lib/SCMerchantClient/SCMerchantClient.php';
-$gatewaymodule = "spectrocoin";
-$GATEWAY = getGatewayVariables($gatewaymodule);
-// get invoice
-$invoiceId = (int)$_POST['invoiceId'];
-$price = $currency = false;
-$result = mysql_query("SELECT tblinvoices.total, tblinvoices.status, tblcurrencies.code FROM tblinvoices, tblclients, tblcurrencies where tblinvoices.userid = tblclients.id and tblclients.currency = tblcurrencies.id and tblinvoices.id=$invoiceId");
-$data = mysql_fetch_assoc($result);
 
-if (!$data) {
-    error_log('No invoice found for invoice id' . $invoiceId);
-    die("Invalid invoice");
+declare(strict_types=1);
+
+require_once '../../../init.php';
+require_once '../../../includes/functions.php';
+require_once '../../../includes/gatewayfunctions.php';
+require_once '../../../includes/invoicefunctions.php';
+
+use SpectroCoin\SCMerchantClient\SCMerchantClient;
+use SpectroCoin\SCMerchantClient\Exception\ApiError;
+use SpectroCoin\SCMerchantClient\Exception\GenericError;
+
+require __DIR__ . '/vendor/autoload.php';
+
+if (!defined("WHMCS")) {
+    die('Access denied.');
 }
 
-$price    = $data['total'];
-$amount   = $price;
-$currency = $data['code'];
-$status   = $data['status'];
+try {
+    $gateway = getGatewayVariables("spectrocoin");
+    validateGateway($gateway);
 
-if ($status != 'Unpaid') {
-    error_log("Invoice status must be Unpaid.  Status: " . $status);
-    die('Bad invoice status');
+    validateRequestMethod($_SERVER['REQUEST_METHOD']);
+
+    $invoiceId = getInvoiceIdFromPost($_POST);
+    $invoice_data = fetchInvoiceData($invoiceId);
+    validateInvoiceData($invoice_data);
+
+    $options = $_POST;
+    $sc_merchant_client = initializeMerchantClient($gateway);
+
+    $order_data = createOrderData($invoiceId, $invoice_data, $options);
+    $response = $sc_merchant_client->createOrder($order_data);
+
+    handleResponse($response);
+
+} catch (Exception $e) {
+    logActivity("SpectroCoin error: " . $e->getMessage());
+    echo 'An error occurred while processing your SpectroCoin payment. Error message: ' . $e->getMessage();
 }
 
-$options = $_POST;
-$userId = $GATEWAY['userId'];
-$projectId = $GATEWAY['projectId'];
-$privateKey = $GATEWAY['privateKey'];
-
-if (!file_exists($privateKeyFilePath) || !is_file($privateKeyFilePath)
-    || !$userId || !$projectId)
-
-if (!$privateKey || !$userId || !$projectId)
+/**
+ * Validate gateway configuration.
+ *
+ * @param array $gateway The gateway configuration array.
+ * @throws Exception If the gateway is not active.
+ */
+function validateGateway(array $gateway): void
 {
-    echo 'Spectrocoin is not fully configured. Please select different payment';
-    exit;
-}
-if ($amount < 0) {
-    error_log('Spectrocoin error. Amount is negativ');
-    echo 'Spectrocoin is not fully configured. Please select different payment';
-    exit;
+    if (!$gateway) {
+        throw new Exception('SpectroCoin module is not active.');
+    }
 }
 
-$orderDescription = "Order #{$invoiceId}";
-$callbackUrl = $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId;
-$successUrl = $options['systemURL'] . '';
-$cancelUrl = $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?cancel&invoice_id=' . $invoiceId;
-$merchantApiUrl = 'https://spectrocoin.com/api/merchant/1';
-$client = new SCMerchantClient($merchantApiUrl, $userId, $projectId);
-$client->setPrivateMerchantKey($privateKey);
-$orderRequest = new CreateOrderRequest(null, "BTC", null, $currency, $amount, $orderDescription, "en", $callbackUrl, $successUrl, $cancelUrl);
-$response =$client->createOrder($orderRequest);
-if ($response instanceof ApiError) {
-    error_log('Error getting response from Spectrocoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage());
-    echo 'Error getting response from Spectrocoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage();
-    exit;
-} else {
-	$redirectUrl = $response->getRedirectUrl();
-	header('Location: ' . $redirectUrl);
+/**
+ * Validate the request method.
+ *
+ * @param string $method The HTTP request method.
+ * @throws Exception If the request method is not POST.
+ */
+function validateRequestMethod(string $method): void
+{
+    if ($method !== 'POST') {
+        throw new Exception('Invalid request method. POST required.');
+    }
+}
+
+/**
+ * Retrieve the invoice ID from POST data.
+ *
+ * @param array $post_data The POST data array.
+ * @return int The invoice ID.
+ */
+function getInvoiceIdFromPost(array $post_data): int
+{
+    return isset($post_data['invoiceId']) ? (int)$post_data['invoiceId'] : 0;
+}
+
+/**
+ * Fetch invoice data from the database.
+ *
+ * @param int $invoiceId The invoice ID.
+ * @return array The invoice data array.
+ * @throws Exception If the MySQL query fails or no invoice is found.
+ */
+function fetchInvoiceData(int $invoiceId): array
+{
+    $result = mysql_query("SELECT tblinvoices.total, tblinvoices.status, tblcurrencies.code 
+                           FROM tblinvoices
+                           JOIN tblclients ON tblinvoices.userid = tblclients.id
+                           JOIN tblcurrencies ON tblclients.currency = tblcurrencies.id
+                           WHERE tblinvoices.id = $invoiceId");
+
+    if (!$result) {
+        throw new Exception('MySQL query failed: ' . mysql_error());
+    }
+
+    $data = mysql_fetch_assoc($result);
+    if (!$data) {
+        throw new Exception('No invoice found for invoice id ' . $invoiceId);
+    }
+
+    return $data;
+}
+
+/**
+ * Validate the fetched invoice data.
+ *
+ * @param array $data The invoice data array.
+ * @throws Exception If the invoice status is not 'Unpaid'.
+ */
+function validateInvoiceData(array $data): void
+{
+    if ($data['status'] !== 'Unpaid') {
+        throw new Exception('Invoice status must be Unpaid. Status: ' . $data['status']);
+    }
+}
+
+/**
+ * Initialize the SpectroCoin Merchant Client.
+ *
+ * @param array $gateway The gateway configuration array.
+ * @return sc_merchant_client The SpectroCoin Merchant Client instance.
+ * @throws Exception If the SpectroCoin configuration is incomplete.
+ */
+function initializeMerchantClient(array $gateway): SCMerchantClient
+{
+    $project_id = $gateway['projectId'];
+    $client_id = $gateway['clientId'];
+    $client_secret = $gateway['clientSecret'];
+
+    if (!$project_id) {
+        throw new Exception('SpectroCoin project ID is not configured. Please select a different payment method.');
+    }
+    
+    if (!$client_id) {
+        throw new Exception('SpectroCoin client ID is not configured. Please select a different payment method.');
+    }
+    
+    if (!$client_secret) {
+        throw new Exception('SpectroCoin client secret is not configured. Please select a different payment method.');
+    }
+
+    return new SCMerchantClient($project_id, $client_id, $client_secret);
+}
+
+/**
+ * Create the order data array.
+ *
+ * @param int $invoiceId The invoice ID.
+ * @param array $invoice_data The invoice data array.
+ * @param array $options Additional options from POST data.
+ * @return array The order data array.
+ */
+function createOrderData(int $invoiceId, array $invoice_data, array $options): array
+{
+    $orderData = [
+        'orderId' => $invoiceId . "-" . rand(1000, 9999),
+        'description' => "Order #{$invoiceId}",
+        'receiveAmount' => $invoice_data['total'],
+        'receiveCurrencyCode' => $invoice_data['code'],
+        'callbackUrl' => $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId,
+        'successUrl' => $options['systemURL'] . 'clientarea.php?action=invoices',
+        'failureUrl' => $options['systemURL'] . 'clientarea.php?action=invoices'
+    ];
+    return $orderData;
+}
+
+/**
+ * Handle the response from SpectroCoin.
+ *
+ * @param mixed $response The response from SpectroCoin.
+ * @throws Exception If the response contains an API error.
+ */
+function handleResponse($response): void
+{
+    if ($response instanceof GenericError || $response instanceof ApiError) {
+        throw new Exception('Error getting response from SpectroCoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage());
+    } else {
+        $redirect_url = $response->getRedirectUrl();
+        header('Location: ' . $redirect_url); 
+    }
 }
