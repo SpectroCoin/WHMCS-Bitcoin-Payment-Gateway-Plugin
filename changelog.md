@@ -1,6 +1,6 @@
 ## Changelog
 
-### 2.0.0 ()
+### 2.0.0 (02/20/2025)
 
 _Updated_ SCMerchantClient was reworked to adhere to better coding standards.
 
