@@ -160,7 +160,7 @@ function createOrderData(int $invoiceId, array $invoice_data, array $options): a
         'description' => "Order #{$invoiceId}",
         'receiveAmount' => $invoice_data['total'],
         'receiveCurrencyCode' => $invoice_data['code'],
-        'callbackUrl' => 'https://cms-whmcs.bankera.cloud/modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId, // change when done updating
+        'callbackUrl' => $options['systemURL'] . 'modules/gateways/callback/spectrocoin.php?invoice_id=' . $invoiceId,
         'successUrl' => $options['systemURL'] . 'clientarea.php?action=invoices',
         'failureUrl' => $options['systemURL'] . 'clientarea.php?action=invoices'
     ];
@@ -179,7 +179,6 @@ function handleResponse($response): void
         throw new Exception('Error getting response from SpectroCoin. Error code: ' . $response->getCode() . ' Error message: ' . $response->getMessage());
     } else {
         $redirect_url = $response->getRedirectUrl();
-        // echo 'Redirect to: ' . $redirect_url; // for debug, change later
         header('Location: ' . $redirect_url); 
     }
 }

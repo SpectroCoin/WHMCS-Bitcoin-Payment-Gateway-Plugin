@@ -4,6 +4,7 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
+
 function spectrocoin_config()
 {
     $configarray = array(
@@ -60,8 +61,7 @@ function spectrocoin_link($params)
         'buyerEmail'    => $email,
         'buyerPhone'    => $phone,
     );
-    // $form = '<form action="'.$systemurl.'modules/gateways/spectrocoin/order.php" method="POST">';
-    $form = '<form action=https://cms-whmcs.bankera.cloud/modules/gateways/spectrocoin/order.php method="POST">'; // for debug, change later
+    $form = '<form action="'.$systemurl.'modules/gateways/spectrocoin/order.php" method="POST">';
     foreach ($post as $key => $value) {
         $form.= '<input type="hidden" name="'.$key.'" value = "'.$value.'" />';
     }
