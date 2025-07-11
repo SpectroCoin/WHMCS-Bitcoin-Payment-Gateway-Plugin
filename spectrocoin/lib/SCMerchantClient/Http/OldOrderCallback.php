@@ -13,7 +13,7 @@ if (!defined("WHMCS")) {
     die('Access denied.');
 }
 
-class OrderCallback
+class OldOrderCallback
 {
     private ?string $userId;
     private ?string $merchantApiId;
