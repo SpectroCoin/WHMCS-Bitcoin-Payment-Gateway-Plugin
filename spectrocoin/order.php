@@ -121,7 +121,7 @@ function validateInvoiceData(array $data): void
  * Initialize the SpectroCoin Merchant Client.
  *
  * @param array $gateway The gateway configuration array.
- * @return sc_merchant_client The SpectroCoin Merchant Client instance.
+ * @return SCMerchantClient The SpectroCoin Merchant Client instance.
  * @throws Exception If the SpectroCoin configuration is incomplete.
  */
 function initializeMerchantClient(array $gateway): SCMerchantClient

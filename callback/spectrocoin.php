@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 include '../../../init.php';
@@ -7,8 +6,10 @@ include '../../../includes/functions.php';
 include '../../../includes/gatewayfunctions.php';
 include '../../../includes/invoicefunctions.php';
 
+use GuzzleHttp\Exception\RequestException;
+use SpectroCoin\SCMerchantClient\SCMerchantClient;
 use SpectroCoin\SCMerchantClient\Enum\OrderStatus;
-use SpectroCoin\SCMerchantClient\Http\OrderCallback;
+use SpectroCoin\SCMerchantClient\Http\OldOrderCallback;
 
 require __DIR__ . '/../spectrocoin/vendor/autoload.php';
 
@@ -18,95 +19,141 @@ if (!defined("WHMCS")) {
 
 $gatewayModuleName = basename(__FILE__, '.php');
 $GATEWAY = getGatewayVariables($gatewayModuleName);
-
 if (!$GATEWAY["type"]) {
     logAndExit('SpectroCoin module not activated', 500);
 }
 
-$project_id = $GATEWAY['projectId'];
-$client_id = $GATEWAY['clientId'];
-$client_secret = $GATEWAY['clientSecret'];
-$receiveCurrency = $GATEWAY['receive_currency'];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $expected_keys = [
-            'userId', 'merchantApiId', 'merchantId', 'apiId', 'orderId', 'payCurrency', 
-            'payAmount', 'receiveCurrency', 'receiveAmount', 'receivedAmount', 
-            'description', 'orderRequestId', 'status', 'sign'
-        ];
-
-        $callback_data = [];
-        foreach ($expected_keys as $key) {
-            if (isset($_POST[$key])) {
-                $callback_data[$key] = $_POST[$key];
-            }
-        }
-
-        if (empty($callback_data)) {
-            logAndExit('No data received in callback', 400);
-        }
-
-        $order_callback = new OrderCallback($callback_data);
-        if ($order_callback === null) {
-            logAndExit('Invalid callback', 400);
-        }
-
-        $invoice_id = explode('-', ($order_callback->getOrderId()))[0];
-        $status = $order_callback->getStatus();
-
-        if ($invoice_id) {
-            switch ($status) {
-                case OrderStatus::New->value:
-                case OrderStatus::Pending->value:
-                    logTransaction($gatewayModuleName, "Invoice $invoice_id status is $status.", 'Status Update');
-                    break;
-                case OrderStatus::Paid->value:
-                    $invoice_id = checkCbInvoiceID($invoice_id, $GATEWAY["name"]);
-                    $transId = "SC" . $order_callback->getOrderRequestId();
-                    checkCbTransID($transId);
-                    $result = select_query('tblinvoices', 'total', ['id' => $invoice_id]);
-                    $data = mysql_fetch_array($result);
-                    $amount = (float) $data['total'];
-                    $fee = 0.0;
-                    addInvoicePayment($invoice_id, $transId, $amount, $fee, $gatewayModuleName);
-                    logTransaction($gatewayModuleName, "Payment added for Invoice $invoice_id. Transaction ID: $transId, Amount: $amount", 'Payment Success');
-                    break;
-                case OrderStatus::Failed->value:
-                case OrderStatus::Expired->value:
-                    logTransaction($gatewayModuleName, "Invoice $invoice_id status is $status.", 'Status Update');
-                    update_query('tblinvoices', ['status' => 'Cancelled'], ['id' => $invoice_id]);
-                    break;
-                default:
-                    logAndExit('Unknown order status: '. $status, 400);
-            }
-            http_response_code(200); // OK
-            echo '*ok*';
-            exit;
-        } else {
-            logAndExit("Invoice '{$invoice_id}' not found!", 404);
-        }
-    } catch (Exception $e) {
-        logAndExit($e->getMessage(), 500);
-    }
-} else {
-    logTransaction($gatewayModuleName, 'Invalid request method.', 'Error');
-    header('Location: /');
-    logAndExit('Invalid request method', 405);
-    exit;
-}
-
 /**
- * Logs a transaction and exits with a specified HTTP response code and message.
- *
- * @param string $message
- * @param int $httpCode
- * @return void
+ * Centralized error logger + HTTP exit
  */
-function logAndExit(string $message, int $httpCode): void {
+function logAndExit(string $message, int $httpCode): void
+{
     global $gatewayModuleName;
     logTransaction($gatewayModuleName, $message, 'Error');
     http_response_code($httpCode);
     exit($message);
 }
-?>
+
+// Only allow POST callbacks
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    logAndExit('Invalid request method.', 405);
+}
+
+try {
+    $rawStatus      = null;
+    $invoiceId      = null;
+    $orderRequestId = null;
+
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (stripos($contentType, 'application/json') !== false) {
+        // --- New JSON callback ---
+        $body = file_get_contents('php://input') ?: '';
+        if ($body === '') {
+            logAndExit('Empty JSON callback payload', 400);
+        }
+        $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($data) || empty($data['id']) || empty($data['merchantApiId'])) {
+            logAndExit('Invalid JSON callback payload', 400);
+        }
+
+        // Fetch latest status from SpectroCoin API
+        $scClient  = new SCMerchantClient(
+            $GATEWAY['projectId'],
+            $GATEWAY['clientId'],
+            $GATEWAY['clientSecret']
+        );
+        $orderData = $scClient->getOrderById($data['id']);
+        if (!is_array($orderData) || empty($orderData['orderId']) || !isset($orderData['status'])) {
+            throw new \InvalidArgumentException('Malformed order data from SpectroCoin API');
+        }
+
+        $invoiceId      = (int) explode('-', $orderData['orderId'], 2)[0];
+        $rawStatus      = $orderData['status'];
+        $orderRequestId = $orderData['merchantPreOrderId'] ?? $data['id'];
+
+    } else {
+        // --- Legacy form-encoded callback ---
+        $expected = [
+            'userId','merchantApiId','merchantId','apiId','orderId','payCurrency',
+            'payAmount','receiveCurrency','receiveAmount','receivedAmount',
+            'description','orderRequestId','status','sign'
+        ];
+        $cb = [];
+        foreach ($expected as $key) {
+            if (isset($_POST[$key])) {
+                $cb[$key] = $_POST[$key];
+            }
+        }
+        if (empty($cb)) {
+            logAndExit('No data received in callback', 400);
+        }
+
+        $oldCb          = new OldOrderCallback($cb);
+        $invoiceId      = (int) explode('-', $oldCb->getOrderId(), 2)[0];
+        $rawStatus      = $oldCb->getStatus();
+        $orderRequestId = $oldCb->getOrderRequestId();
+    }
+
+    // Normalize into your enum
+    $statusEnum = OrderStatus::normalize($rawStatus);
+
+    switch ($statusEnum) {
+        case OrderStatus::NEW:
+        case OrderStatus::PENDING:
+            logTransaction(
+                $gatewayModuleName,
+                "Invoice {$invoiceId} status is {$statusEnum->value}.",
+                'Status Update'
+            );
+            break;
+
+        case OrderStatus::PAID:
+            $invoiceId = checkCbInvoiceID($invoiceId, $GATEWAY["name"]);
+            $transId   = 'SC' . $orderRequestId;
+            checkCbTransID($transId);
+
+            $res    = select_query('tblinvoices', 'total', ['id' => $invoiceId]);
+            $data   = mysql_fetch_array($res);
+            $amount = (float)$data['total'];
+
+            addInvoicePayment(
+                $invoiceId,
+                $transId,
+                $amount,
+                0.0,
+                $gatewayModuleName
+            );
+            logTransaction(
+                $gatewayModuleName,
+                "Payment successful for Invoice {$invoiceId}, TransID {$transId}, Amount {$amount}",
+                'Payment Success'
+            );
+            break;
+
+        case OrderStatus::FAILED:
+        case OrderStatus::EXPIRED:
+            logTransaction(
+                $gatewayModuleName,
+                "Invoice {$invoiceId} status is {$statusEnum->value}.",
+                'Status Update'
+            );
+            update_query('tblinvoices', ['status' => 'Cancelled'], ['id' => $invoiceId]);
+            break;
+
+        default:
+            // Should never happen because normalize() throws on unknown
+            logAndExit("Unhandled status: {$statusEnum->value}", 500);
+    }
+
+    http_response_code(200);
+    echo '*ok*';
+    exit;
+
+} catch (\JsonException | \InvalidArgumentException $e) {
+    // Known issues (parsing, unknown status, malformed data)
+    logAndExit('Error processing callback: ' . $e->getMessage(), 400);
+
+} catch (\Throwable $e) {
+    // Catch everything else (autoload failures, fatal errors, etc)
+    logAndExit('SpectroCoin Callback Exception: ' . $e->getMessage(), 500);
+}
