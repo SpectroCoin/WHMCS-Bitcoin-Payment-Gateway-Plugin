@@ -70,6 +70,10 @@ try {
         $invoiceId      = (int) explode('-', $orderData['orderId'], 2)[0];
         $rawStatus      = $orderData['status'];
         $orderRequestId = $orderData['merchantPreOrderId'] ?? $data['id'];
+        // MerchantOrderDTO reports the settlement side as
+        // receiveAmount / receiveCurrencyCode.
+        $receiveAmount   = $orderData['receiveAmount'] ?? null;
+        $receiveCurrency = $orderData['receiveCurrencyCode'] ?? null;
 
     } else {
         // --- Legacy form-encoded callback ---
@@ -92,6 +96,8 @@ try {
         $invoiceId      = (int) explode('-', $oldCb->getOrderId(), 2)[0];
         $rawStatus      = $oldCb->getStatus();
         $orderRequestId = $oldCb->getOrderRequestId();
+        $receiveAmount   = $oldCb->getReceiveAmount();
+        $receiveCurrency = $oldCb->getReceiveCurrency();
     }
 
     // Normalize into your enum
@@ -113,8 +119,45 @@ try {
             checkCbTransID($transId);
 
             $res    = select_query('tblinvoices', 'total', ['id' => $invoiceId]);
-            $data   = mysql_fetch_array($res);
-            $amount = (float)$data['total'];
+            $invoiceRow = mysql_fetch_array($res);
+            $amount = (float)$invoiceRow['total'];
+
+            // The order was created with receiveAmount / receiveCurrencyCode taken
+            // from the invoice total, so they must still match. A missing field
+            // means an unexpected payload shape rather than a mismatch, so it is
+            // logged and the comparison is skipped.
+            if ($receiveCurrency === null || $receiveAmount === null) {
+                logTransaction(
+                    $gatewayModuleName,
+                    "No settlement amount to compare for invoice {$invoiceId}.",
+                    'Status Update'
+                );
+            } else {
+                $currencyRes = full_query(
+                    "SELECT tblcurrencies.code FROM tblinvoices
+                     JOIN tblclients ON tblinvoices.userid = tblclients.id
+                     JOIN tblcurrencies ON tblclients.currency = tblcurrencies.id
+                     WHERE tblinvoices.id = " . (int) $invoiceId
+                );
+                $currencyRow  = mysql_fetch_assoc($currencyRes);
+                $invoiceCurrency = $currencyRow['code'] ?? null;
+
+                if ($invoiceCurrency !== null
+                    && strtoupper((string) $receiveCurrency) !== strtoupper((string) $invoiceCurrency)) {
+                    logAndExit('Currency does not match the invoice.', 400);
+                }
+                // Reported for now rather than rejected: it is not yet confirmed
+                // whether the settled amount is gross or net of fees, and
+                // rejecting a legitimate settlement would leave the invoice
+                // unpaid. Promote to a rejection once confirmed.
+                if ((float) $receiveAmount + 0.00000001 < $amount) {
+                    logTransaction(
+                        $gatewayModuleName,
+                        "Amount {$receiveAmount} does not cover invoice {$invoiceId} total {$amount}.",
+                        'Status Update'
+                    );
+                }
+            }
 
             addInvoicePayment(
                 $invoiceId,
