@@ -103,6 +103,17 @@ try {
     // Normalize into your enum
     $statusEnum = OrderStatus::normalize($rawStatus);
 
+    if ($statusEnum->isInformational()) {
+        logTransaction(
+            $gatewayModuleName,
+            "Invoice {$invoiceId} reported {$statusEnum->value}; no status change applied.",
+            'Status Update'
+        );
+        http_response_code(200);
+        echo '*ok*';
+        exit;
+    }
+
     switch ($statusEnum) {
         case OrderStatus::NEW:
         case OrderStatus::PENDING:
@@ -174,6 +185,9 @@ try {
             break;
 
         case OrderStatus::FAILED:
+        case OrderStatus::CANCELLED:
+        case OrderStatus::REJECTED:
+        case OrderStatus::INVALID_PAYMENT:
         case OrderStatus::EXPIRED:
             logTransaction(
                 $gatewayModuleName,
