@@ -48,7 +48,11 @@ class SCMerchantClient
         $this->client_secret = $client_secret;
 
         $this->encryption_key = $this->initializeEncryptionKey();
-        $this->http_client = new Client();
+        $this->http_client = new Client([
+            'headers' => [
+                'User-Agent' => self::pluginUserAgent(),
+            ],
+        ]);
     }
 
     /**
@@ -257,5 +261,32 @@ class SCMerchantClient
         } catch (Exception $e) {
             return new GenericError($e->getMessage(), $e->getCode());
         }
+    }
+
+    /** Platform this build of the client ships with. */
+    private const PLUGIN_PLATFORM = 'WHMCS';
+
+    /** Bump with the release: this is what identifies the build server-side. */
+    private const PLUGIN_VERSION = '2.1.5';
+
+    /**
+     * Identifies the plugin and its version on every API call, so the version
+     * actually deployed across merchant installations is visible to us without
+     * having to ask anyone.
+     *
+     * Carries no merchant or site identity: the request is already
+     * authenticated, so the caller is known, and the shop URL is not ours to
+     * volunteer.
+     *
+     * @return string
+     */
+    private static function pluginUserAgent()
+    {
+        return sprintf(
+            'SpectroCoin-%s/%s (PHP/%s)',
+            self::PLUGIN_PLATFORM,
+            self::PLUGIN_VERSION,
+            PHP_VERSION
+        );
     }
 }
