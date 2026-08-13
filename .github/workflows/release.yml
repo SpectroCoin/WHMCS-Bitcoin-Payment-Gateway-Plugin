@@ -56,6 +56,16 @@ jobs:
             echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_ENV
           fi
 
+      - name: Install runtime dependencies
+        if: env.TAG_EXISTS == 'false'
+        run: |
+          # The vendor directory is tracked as gitlinks, so a checkout leaves it
+          # empty. Build it here or the packaged plugin ships without its HTTP
+          # client and fails on the first API call.
+          rm -rf spectrocoin/vendor
+          composer install -d spectrocoin --no-dev --prefer-dist --optimize-autoloader --no-interaction
+        shell: bash
+
       - name: Create spectrocoin.zip
         if: env.TAG_EXISTS == 'false'
         run: |
