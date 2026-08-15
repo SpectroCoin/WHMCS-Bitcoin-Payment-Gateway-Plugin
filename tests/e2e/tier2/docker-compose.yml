@@ -41,9 +41,12 @@ services:
         condition: service_healthy
     networks:
       default:
-        # The plugin rejects a callbackUrl whose host has no dot.
+        # The plugin rejects a callbackUrl whose host has no dot. The second
+        # alias exists so a node-locked WHMCS licence, which is issued against a
+        # specific domain, can validate - set WHMCS_DOMAIN to match yours.
         aliases:
           - shop.test
+          - ${WHMCS_DOMAIN:-shop.test}
     volumes:
       - ./.certs:/certs:ro
     ports:
