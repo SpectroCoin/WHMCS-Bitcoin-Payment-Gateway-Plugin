@@ -35,6 +35,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../../.." && pwd)"
 WHMCS_PACKAGE="${WHMCS_PACKAGE:-$HOME/spectrocoin-plugin-audit/.artifacts/whmcs_v8135_full.zip}"
 WHMCS_LICENSE_FILE="${WHMCS_LICENSE_FILE:-}"
+# A node-locked licence validates only against the domain it was issued for.
+WHMCS_DOMAIN="${WHMCS_DOMAIN:-shop.test}"
 KEEP=0
 
 while [ $# -gt 0 ]; do
@@ -247,7 +249,7 @@ q "UPDATE tblcurrencies SET code='EUR' WHERE id=1;" >/dev/null 2>&1
 # --------------------------------------------------------------------------
 say "Delivering callbacks for every status on the wire"
 
-CB="http://shop.test/modules/gateways/callback/spectrocoin.php"
+CB="http://$WHMCS_DOMAIN/modules/gateways/callback/spectrocoin.php"
 
 patch_order() {
   stub curl -fsS -X POST -H 'Content-Type: application/json' -d "$1" \
@@ -336,8 +338,8 @@ errs=$(q "SELECT COUNT(*) FROM tblgatewaylog WHERE gateway='spectrocoin' AND res
                        || fail "$errs unhandled-status entries in the gateway log"
 
 if [ "$KEEP" -eq 1 ]; then
-  echo -e "\nstack left running: add '127.0.0.1 shop.test' to /etc/hosts, then"
-  echo    "http://shop.test:8092/admin (admin/Tier2tier2!)"
+  echo -e "\nstack left running: add '127.0.0.1 $WHMCS_DOMAIN' to /etc/hosts, then"
+  echo    "http://$WHMCS_DOMAIN:8092/admin (admin/Tier2tier2!)"
 else
   docker compose down -v >/dev/null 2>&1 || true
   rm -rf .certs
