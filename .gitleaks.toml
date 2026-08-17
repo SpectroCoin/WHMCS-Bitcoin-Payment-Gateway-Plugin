@@ -1,0 +1,15 @@
+# The test harness authenticates against its own stub with a literal
+# placeholder token, which the curl-auth-header rule reads as a credential.
+# Allowlisting that exact string keeps the rule active for everything else -
+# a real bearer token in the same file would still fail the build.
+#
+# The string is matched rather than the file, because the same line appears
+# under several commit hashes and per-commit fingerprints do not survive a
+# squash merge.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholder bearer token used by the e2e test stub"
+regexes = ['''^stub-access-token$''']
